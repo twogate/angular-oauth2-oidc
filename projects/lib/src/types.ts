@@ -86,25 +86,40 @@ export abstract class OAuthLogger {
  * but you can also create your own implementations.
  */
 export abstract class OAuthStorage {
-  abstract getItem(key: string): string | null;
-  abstract removeItem(key: string): void;
-  abstract setItem(key: string, data: string): void;
+  abstract getItem(key: string): Promise<string | null>;
+  abstract removeItem(key: string): Promise<void>;
+  abstract setItem(key: string, data: string): Promise<void>;
+}
+
+@Injectable()
+export class SessionStorage implements OAuthStorage {
+  getItem(key: string): Promise<string> {
+    return new Promise<string>(() => sessionStorage.get(key));
+  }
+
+  removeItem(key: string): Promise<void> {
+    return new Promise<void>(() => sessionStorage.delete(key));
+  }
+
+  setItem(key: string, data: string): Promise<void> {
+    return new Promise<void>(() => sessionStorage.set(key, data));
+  }
 }
 
 @Injectable()
 export class MemoryStorage implements OAuthStorage {
   private data = new Map<string, string>();
 
-  getItem(key: string): string {
-    return this.data.get(key);
+  getItem(key: string): Promise<string> {
+    return new Promise<string>(() => this.data.get(key));
   }
 
-  removeItem(key: string): void {
-    this.data.delete(key);
+  removeItem(key: string): Promise<void> {
+    return new Promise<void>(() => this.data.delete(key));
   }
 
-  setItem(key: string, data: string): void {
-    this.data.set(key, data);
+  setItem(key: string, data: string): Promise<void> {
+    return new Promise<void>(() => this.data.set(key, data));
   }
 }
 
